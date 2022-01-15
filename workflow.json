@@ -1,0 +1,15 @@
+{
+    "output": "./output",
+    "layers": {
+        "DA": "./input/DA.gpkg",
+        "CSD": "./input/CSD.gpkg",
+        "PR": "./input/PR.gpkg",
+        "ODHF": "./input/ODHF.gpkg",
+        "NRN_QC": "./input/NRN_QC_9_0_GPKG_en.gpkg|layername=NRN_QC_9_0_ROADSEG",
+        "NRN_ON": "./input/NRN_ON_13_0_GPKG_en.gpkg|layername=NRN_ON_12_1_ROADSEG"
+    },
+    "data": {
+        "DA_pop": "./input/DA.csv",
+        "PR_pop": "./input/PR.csv"
+    }
+}

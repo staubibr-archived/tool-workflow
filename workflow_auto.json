@@ -1,0 +1,269 @@
+{
+    "output": "./output",
+    "layers": {
+        "DA": "./input/DA.gpkg",
+        "CSD": "./input/CSD.gpkg",
+        "PR": "./input/PR.gpkg",
+        "ODHF": "./input/ODHF.gpkg",
+        "NRN_QC": "./input/NRN_QC_9_0_GPKG_en.gpkg|layername=NRN_QC_9_0_ROADSEG",
+        "NRN_ON": "./input/NRN_ON_13_0_GPKG_en.gpkg|layername=NRN_ON_12_1_ROADSEG"
+    },
+    "data": {
+        "DA_pop": "./input/DA.csv",
+        "PR_pop": "./input/PR.csv"
+    },
+    "tasks": [{
+            "name": "native:extractbyexpression",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "CSD"
+                },
+                "EXPRESSION": "\"csduid\" IN (2482030,2481017,2482025,2482020,2482005,2482015)",
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            }
+        }, {
+            "name": "native:dissolve",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            }
+        }, {
+            "name": "native:deletecolumn",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "COLUMN": ["fid", "id", "csduid", "csdname", "csdtype", "pruid", "prname", "cduid", "cdname", "cdtype", "ccsuid", "ccsname", "eruid", "ername", "saccode", "sactype", "cmauid", "cmapuid", "cmaname", "cmatype"],
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            },
+			"output": "simulation_area"
+        }, {
+            "name": "native:clip",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "DA"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT",
+                "OVERLAY": {
+                    "type": "layers",
+                    "name": "simulation_area"
+                }
+            }
+        }, {
+            "name": "native:deletecolumn",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "COLUMN": ["fid", "id", "pruid", "prname", "cduid", "cdname", "cdtype", "ccsuid", "ccsname", "csduid", "csdname", "csdtype", "eruid", "ername", "saccode", "sactype", "cmauid", "cmapuid", "cmaname", "cmatype", "ctuid", "ctname", "adauid"],
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            }
+        }, {
+            "name": "native:reprojectlayer",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT",
+                "TARGET_CRS": "4326"
+            }
+        }, {
+            "name": "native:joinattributestable",
+            "params": {
+                "DISCARD_NONMATCHING": false,
+                "FIELD": "dauid",
+                "FIELDS_TO_COPY": ["DApop_2016"],
+                "FIELD_2": "DAuid",
+                "INPUT": {
+                    "type": "result"
+                },
+                "INPUT_2": {
+                    "type": "data",
+                    "name": "DA_pop"
+                },
+                "METHOD": 1,
+                "OUTPUT": "TEMPORARY_OUTPUT",
+                "PREFIX": ""
+            }
+        }, {
+            "name": "native:refactorfields",
+            "params": {
+                "FIELDS_MAPPING": [{
+                        "expression": "\"dauid\"",
+                        "length": 0,
+                        "name": "dauid",
+                        "precision": 0,
+                        "type": 10
+                    }, {
+                        "expression": "\"DApop_2016\"",
+                        "length": 0,
+                        "name": "DApop_2016",
+                        "precision": 0,
+                        "type": 2
+                    }
+                ],
+                "INPUT": {
+                    "type": "result"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            },
+			"output": "emergency_areas"
+        }, {
+            "name": "native:extractbyexpression",
+            "params": {
+                "EXPRESSION": "\"odhf_facility_type\" = 'Hospitals'",
+                "INPUT": {
+                    "type": "layers",
+                    "name": "ODHF"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            }
+        }, {
+            "name": "native:extractbyexpression",
+            "params": {
+                "EXPRESSION": "index IN ('S1245', 'S1290', 'S647')",
+                "INPUT": {
+                    "type": "result"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            }
+        }, {
+            "name": "native:deletecolumn",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "COLUMN": ["source_facility_type", "odhf_facility_type", "provider", "unit", "street_no", "street_name", "postal_code", "city", "province", "source_format_str_address", "CSDname", "CSDuid", "Pruid", "latitude", "longitude"],
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            }
+        }, {
+            "name": "native:extractbylocation",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "INTERSECT": {
+                    "type": "layers",
+                    "name": "simulation_area"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT",
+                "PREDICATE": [6]
+            }
+        }, {
+            "name": "native:reprojectlayer",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT",
+                "TARGET_CRS": "4326"
+            },
+			"output": "hospitals"
+        }, {
+            "name": "native:clip",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "NRN_QC"
+                },
+                "OVERLAY": {
+                    "type": "layers",
+                    "name": "simulation_area"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            },
+            "output": "result_1"
+        }, {
+            "name": "native:clip",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "NRN_ON"
+                },
+                "OVERLAY": {
+                    "type": "layers",
+                    "name": "simulation_area"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            },
+            "output": "result_2"
+        }, {
+            "name": "native:mergevectorlayers",
+            "params": {
+                "LAYERS": {
+					"type": "layers",
+					"names": ["result_1", "result_2"]
+				},
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            }
+        }, {
+            "name": "native:reprojectlayer",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT",
+                "TARGET_CRS": "4326"
+            },
+			"output": "network"
+        }, {
+            "name": "native:centroids",
+            "params": {
+                "ALL_PARTS": false,
+                "INPUT": {
+                    "type": "layers",
+                    "name": "emergency_areas"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            }
+        }, {
+            "name": "qneat3:OdMatrixFromLayersAsTable",
+            "params": {
+                "DEFAULT_DIRECTION": 2,
+                "DEFAULT_SPEED": 55,
+                "DIRECTION_FIELD": "",
+                "ENTRY_COST_CALCULATION_METHOD": 0,
+                "FROM_ID_FIELD": "dauid",
+                "FROM_POINT_LAYER": {
+                    "type": "result"
+                },
+                "INPUT": {
+                    "type": "layers",
+                    "name": "network"
+                },
+                "OUTPUT": "TEMPORARY_OUTPUT",
+                "SPEED_FIELD": "",
+                "STRATEGY": 0,
+                "TOLERANCE": 0,
+                "TO_ID_FIELD": "index",
+                "TO_POINT_LAYER": {
+                    "type": "layers",
+                    "name": "hospitals"
+                },
+                "VALUE_BACKWARD": "",
+                "VALUE_BOTH": "",
+                "VALUE_FORWARD": ""
+            },
+			"output": "od"
+        }, {
+            "name": "custom:closest",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "emergency_areas"
+                },
+				"OD": {
+                    "type": "layers",
+                    "name": "od"
+				},
+                "SOURCE_FIELD": "dauid",
+                "LINK_FIELD": "hospitals",
+				"N": 3
+            }
+        }
+    ]
+}
