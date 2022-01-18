@@ -1,5 +1,5 @@
 {
-    "output": "./output",
+    "output": "D:/Development/lab-cadmium/cadmium-v2/example/geo-hospital-cbm/data",
     "layers": {
         "DA": "./input/DA.gpkg",
         "CSD": "./input/CSD.gpkg",
@@ -95,13 +95,13 @@
                 "FIELDS_MAPPING": [{
                         "expression": "\"dauid\"",
                         "length": 0,
-                        "name": "dauid",
+                        "name": "id",
                         "precision": 0,
                         "type": 10
                     }, {
                         "expression": "\"DApop_2016\"",
                         "length": 0,
-                        "name": "DApop_2016",
+                        "name": "population",
                         "precision": 0,
                         "type": 2
                     }
@@ -138,6 +138,40 @@
                     "type": "result"
                 },
                 "COLUMN": ["source_facility_type", "odhf_facility_type", "provider", "unit", "street_no", "street_name", "postal_code", "city", "province", "source_format_str_address", "CSDname", "CSDuid", "Pruid", "latitude", "longitude"],
+                "OUTPUT": "TEMPORARY_OUTPUT"
+            }
+        }, {
+            "name": "native:refactorfields",
+            "params": {
+                "FIELDS_MAPPING": [{
+                        "expression": "\"index\"",
+                        "length": 0,
+                        "name": "id",
+                        "precision": 0,
+                        "type": 10
+                    }, {
+                        "expression": "\"facility_name\"",
+                        "length": 0,
+                        "name": "name",
+                        "precision": 0,
+                        "type": 10
+                    }, {
+                        "expression": "\"capacity\"",
+                        "length": 0,
+                        "name": "capacity",
+                        "precision": 0,
+                        "type": 2
+                    }, {
+                        "expression": "\"rate\"",
+                        "length": 0,
+                        "name": "rate",
+                        "precision": 0,
+                        "type": 2
+                    }
+                ],
+                "INPUT": {
+                    "type": "result"
+                },
                 "OUTPUT": "TEMPORARY_OUTPUT"
             }
         }, {
@@ -227,7 +261,7 @@
                 "DEFAULT_SPEED": 55,
                 "DIRECTION_FIELD": "",
                 "ENTRY_COST_CALCULATION_METHOD": 0,
-                "FROM_ID_FIELD": "dauid",
+                "FROM_ID_FIELD": "id",
                 "FROM_POINT_LAYER": {
                     "type": "result"
                 },
@@ -239,7 +273,7 @@
                 "SPEED_FIELD": "",
                 "STRATEGY": 0,
                 "TOLERANCE": 0,
-                "TO_ID_FIELD": "index",
+                "TO_ID_FIELD": "id",
                 "TO_POINT_LAYER": {
                     "type": "layers",
                     "name": "hospitals"
@@ -260,7 +294,7 @@
                     "type": "layers",
                     "name": "od"
 				},
-                "SOURCE_FIELD": "dauid",
+                "SOURCE_FIELD": "id",
                 "LINK_FIELD": "hospitals",
 				"N": 3
             }

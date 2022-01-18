@@ -20,6 +20,9 @@ class Instance:
             "params": self.params
         }
 
+    def to_cbm(self):
+        return self.params
+
 class InstancesSet:
     @property
     def model_type_id(self):
@@ -55,6 +58,15 @@ class InstancesSet:
             "instances": [instance.to_json() for instance in self.instances]
         }
 
+    def to_cbm(self):
+        return {
+            "model_type": self.model_type_id,
+            "source": {
+                "type": "direct",
+                "data": [instance.to_cbm() for instance in self.instances]
+            }
+        }
+
 class InstancesSets:
     @property
     def sets(self):
@@ -71,6 +83,9 @@ class InstancesSets:
 
     def to_json(self):
         return [instances_set.to_json() for instances_set in self._sets]
+
+    def to_cbm(self):
+        return [instances_set.to_cbm() for instances_set in self._sets]
 
     def dump(self, path):
         with open(path, 'w') as file:

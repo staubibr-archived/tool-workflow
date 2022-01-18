@@ -14,7 +14,7 @@ class Config:
         return self.json["tasks"]
 
     def __init__(self, workflow_file):
-        self.json = json.load(open(workflow_file))
+        self.json = tools.get_json(workflow_file)
 
         for key in self.json["layers"]:
             self.json["layers"][key] = QgsVectorLayer(self.json["layers"][key])
@@ -60,7 +60,24 @@ class Config:
             return self.param(name)
 
     def save_layer(self, layer_id, file):
+        print('Saving layer ' + layer_id + ' to ' + self.output_path(file))
         tools.save_layer(self.layer(layer_id), self.output_path(file))
+
+    def save_instances(self, instances):
+        print('Saving instances to ' + self.output_path('auto_instances.json'))
+        instances.dump(self.output_path('auto_instances.json'))
+
+    def save_relationships(self, relationships):
+        print('Saving relationships to ' + self.output_path('auto_relationships.json'))
+        relationships.dump(self.output_path('auto_relationships.json'))
+
+    def save_auto_coupled(self, auto_coupled):
+        print('Saving component based modeling (CBM) auto coupled model configuration to ' + self.output_path('auto_coupled.json'))
+        auto_coupled.dump(self.output_path('auto_coupled.json'))
+
+    def save_auto_coupled_cbm(self, auto_coupled):
+        print('Saving component based modeling (CBM) auto coupled model configuration to ' + self.output_path('auto_coupled.json'))
+        auto_coupled.dump_cbm(self.output_path('auto_coupled.json'))
 
     def empty_output(self):
         tools.empty_folder(self.output_folder)

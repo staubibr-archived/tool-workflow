@@ -47,6 +47,14 @@ class RelationsSet:
 
             self.links.extend(links)
 
+    def to_cbm(self):
+        return {
+            "from_model": self.source.model_type_id,
+            "from_port": self.source.port,
+            "to_model": self.destination.model_type_id,
+            "to_port": self.destination.port,
+            "links": self.links
+        }
 
     def to_json(self):
         return {
@@ -75,6 +83,9 @@ class RelationsSets:
 
     def to_json(self):
         return [relations_set.to_json() for relations_set in self._sets]
+
+    def to_cbm(self):
+        return [relations_set.to_cbm() for relations_set in self._sets]
 
     def dump(self, path):
         with open(path, 'w') as file:

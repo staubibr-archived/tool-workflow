@@ -39,7 +39,11 @@ class Workflow:
         name = task["name"]
         params = task["params"]
 
-        self.log_step("Running " + name + "... \n\t" + "{0}".format(params) + "...\n")
+        Workflow.N += 1
+
+        print("\n\t" + str(Workflow.N) + ". Running " + name + "...")
+        print("\t" + "{0}".format(params) + "...")
+
         for key in params:
             if key == "TARGET_CRS":
                 params[key] = QgsCoordinateReferenceSystem("epsg:" + params[key])
@@ -67,12 +71,9 @@ class Workflow:
         for task in self.config.tasks:
             self.execute_task_json(task)
 
+        print('\nWorkflow executed successfully.')
+
     # noinspection PyMethodMayBeStatic
     def log_wf(self, message):
         print('\n*** ' + message + ' ***')
 
-    # noinspection PyMethodMayBeStatic
-    def log_step(self, message):
-        Workflow.N += 1
-
-        print(str(Workflow.N) + ". " + message)

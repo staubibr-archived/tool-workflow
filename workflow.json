@@ -1,5 +1,5 @@
 {
-    "output": "./output",
+    "output": "D:/Development/lab-cadmium/cadmium-v2/example/geo-hospital-cbm/data",
     "layers": {
         "DA": "./input/DA.gpkg",
         "CSD": "./input/CSD.gpkg",
