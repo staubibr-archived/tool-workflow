@@ -14,6 +14,9 @@ class Target:
         self._model_type_id = model_type_id
         self._port = port
 
+    def same(self, model_type_id, port):
+        return self.model_type_id == model_type_id and self.port == port
+
     def to_json(self):
         return {
             "model_type_id": self.model_type_id,
@@ -39,13 +42,12 @@ class RelationsSet:
         self._links = [] if links is None else links
 
     # areas, dauid, hospitals
-    def fill(self, layer, src_id_fld, lnk_id_fld, mapper):
+    def fill(self, layer, f_src, f_dest):
         for f in layer.getFeatures():
-            src_id = f[src_id_fld]
-            lnk_ids = [l.strip() for l in f[lnk_id_fld].split(',')]
-            links = mapper(src_id, lnk_ids)
+            self.links.append([f[f_src], f[f_dest]])
 
-            self.links.extend(links)
+    def same(self, src_model_type_id, src_port, tgt_model_type_id, tgt_port):
+        return self.source.same(src_model_type_id, src_port) and self.destination.same(tgt_model_type_id, tgt_port)
 
     def to_cbm(self):
         return {
@@ -71,11 +73,24 @@ class RelationsSets:
     def __init__(self):
         self._sets = list()
 
-    def add_set(self, source_model_type, source_port, destination_model_type, destination_port):
-        source = Target(source_model_type, source_port)
-        destination = Target(destination_model_type, destination_port)
+    def get_set(self, source_model_type, source_port, destination_model_type, destination_port):
+        for s in self.sets:
+            if s.same(source_model_type, source_port, destination_model_type, destination_port):
+                return s
 
-        self._sets.append(RelationsSet(source, destination))
+        return None
+
+    def add_set(self, source_model_type, source_port, destination_model_type, destination_port):
+        s = self.get_set(source_model_type, source_port, destination_model_type, destination_port)
+
+        if s is not None:
+            return s
+
+        s = RelationsSet(Target(source_model_type, source_port), Target(destination_model_type, destination_port))
+
+        self._sets.append(s)
+
+        return s
 
     def fill(self, mapper, layer):
         for f in layer.getFeatures():

@@ -4,37 +4,34 @@ from components.instances_set import InstancesSets
 from components.relations_set import  RelationsSets
 from components.auto_coupled import  AutoCoupled
 from components.workflow import Workflow
+from components import tools
 
 args = Args()
-config = Config(args.workflow)
+json = tools.get_json(args.workflow)
+config = Config(json, args.output)
 
 print('\nCleaning any previous output...')
-config.empty_output()
+tools.empty_folder(config.output_folder)
 
 print('\nExecuting spatial analysis workflow at ' + args.workflow + '...')
-Workflow(config).execute()
+wf = Workflow(config).execute()
 
-config.save_layer("simulation_area", "simulation_area.geojson")
-config.save_layer("hospitals", "hospitals.geojson")
-config.save_layer("network", "network.geojson")
-config.save_layer("emergency_areas", "emergency_areas.geojson")
+for l in config.output.layers:
+    print('Saving layer ' + l.name + ' to ' + config.output_path(l.file))
+    tools.save_layer(wf.layer(l.name), config.output_path(l.file))
 
 auto_instances = InstancesSets()
-auto_instances.add_set_from_layer("emergency_area", config.layer("emergency_areas"), "id", ["id", "population"])
-auto_instances.add_set_from_layer("hospital", config.layer("hospitals"), "id", ["id", "name", "rate", "capacity"])
+
+for i in config.output.instances:
+    auto_instances.add_set_from_layer(i.model, wf.layer(i.layer), i.id_field, i.properties)
 
 auto_relations = RelationsSets()
-auto_relations.add_set("emergency_area", "out_1", "hospital", "processor_in")
-auto_relations.add_set("emergency_area", "out_2", "hospital", "processor_in")
-auto_relations.add_set("emergency_area", "out_3", "hospital", "processor_in")
-auto_relations.add_set("hospital", "processor_out", "emergency_area", "rejected_1")
 
-# TODO: The double array in the lambda is awkward, need to review this.
-auto_relations.sets[0].fill(config.layer("emergency_areas"), "id", "hospitals", lambda src, links: [[src, links[0]]])
-auto_relations.sets[1].fill(config.layer("emergency_areas"), "id", "hospitals", lambda src, links: [[src, links[1]]])
-auto_relations.sets[2].fill(config.layer("emergency_areas"), "id", "hospitals", lambda src, links: [[src, links[2]]])
-auto_relations.sets[3].fill(config.layer("emergency_areas"), "id", "hospitals", lambda src, links: [[lnk_id, src] for lnk_id in links])
+for r in config.output.relations:
+    s = auto_relations.add_set(r.coupling[0], r.coupling[1], r.coupling[2], r.coupling[3])
+    s.fill(wf.layer(r.layer), r.fields[0], r.fields[1])
 
 auto_top = AutoCoupled("area_1", "gis_emergencies", auto_instances, auto_relations)
 
-config.save_auto_coupled_cbm(auto_top)
+print('Saving component based modeling (CBM) auto coupled model configuration to ' + config.output_path('auto_coupled.json'))
+auto_top.dump_cbm(config.output_path('auto_coupled.json'))

@@ -18,11 +18,13 @@ def __group__(od):
 def execute(od, src_layer, src_id_field, lnk_id_field, n):
     groups = __group__(od)
 
-    src_layer.dataProvider().addAttributes([QgsField(lnk_id_field, QVariant.String, "string")])
+    fields = [lnk_id_field + "_" + str(i) for i in range(1, n + 1)]
+
+    for f in fields:
+        src_layer.dataProvider().addAttributes([QgsField(f, QVariant.String, "string")])
+
     src_layer.updateFields()
     src_layer.startEditing()
-
-    i_lnk_field = src_layer.fields().indexFromName(lnk_id_field)
 
     for feature in src_layer.getFeatures():
         src_id = feature[src_id_field]
@@ -32,10 +34,10 @@ def execute(od, src_layer, src_id_field, lnk_id_field, n):
 
         groups[src_id].sort(key=lambda f: f['total_cost'])
 
-        list_hospitals = list(map(lambda f: f['destination_id'], groups[src_id][0:3]))
-        str_hospitals = ", ".join(list_hospitals)
-
-        src_layer.changeAttributeValue(feature.id(), i_lnk_field, str_hospitals)
+        for i in range(0, n):
+            d = groups[src_id][i]['destination_id']
+            i_lnk_field = src_layer.fields().indexFromName(fields[i])
+            src_layer.changeAttributeValue(feature.id(), i_lnk_field, d)
 
     src_layer.commitChanges()
 
