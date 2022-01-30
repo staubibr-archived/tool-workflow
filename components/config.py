@@ -147,7 +147,12 @@ class Config:
     def output_folder(self):
         return self._output_folder
 
-    def __init__(self, json, output_folder):
+    @property
+    def input_folder(self):
+        return self._input_folder
+
+    def __init__(self, json, input_folder, output_folder):
+        self._input_folder = input_folder
         self._output_folder = output_folder
         self._json = json
 
@@ -157,3 +162,9 @@ class Config:
 
     def output_path(self, name):
         return self.output_folder + "/" + name
+
+    def input_layer(self, name):
+        return self.input_folder + "/" + self.input.layer(name)
+
+    def input_data(self, name):
+        return self.input_folder + "/" + self.input.data(name)

@@ -1,17 +1,8 @@
-from qgis.core import QgsApplication, QgsCoordinateReferenceSystem, QgsVectorLayer
-from qgis.analysis import QgsNativeAlgorithms
-from QNEAT3 import Qneat3Provider
+from qgis.core import QgsCoordinateReferenceSystem, QgsVectorLayer
 import processing
 
 # Prepare QGIS environment
 from tasks import tsk_closest
-
-QgsApplication.processingRegistry().addProvider(QgsNativeAlgorithms())
-
-p = Qneat3Provider.Qneat3Provider()
-p.loadAlgorithms()
-
-QgsApplication.processingRegistry().addProvider(p)
 
 class Workflow:
     N = 0
@@ -26,7 +17,7 @@ class Workflow:
         self.layers = {}
 
         for key in config.input.layers:
-            self.layers[key] = QgsVectorLayer(config.input.layers[key])
+            self.layers[key] = QgsVectorLayer(config.input_layer(key))
 
         self.crs = QgsCoordinateReferenceSystem("epsg:4326")
 
@@ -93,7 +84,7 @@ class Workflow:
 
     def get(self, type, name):
         if type == "data":
-            return self.config.input.data(name)
+            return self.config.input_data(name)
 
         if type == "layers":
             return self.layer(name)

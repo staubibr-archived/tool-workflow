@@ -1,3 +1,7 @@
+from qgis.core import QgsApplication
+from qgis.analysis import QgsNativeAlgorithms
+from QNEAT3 import Qneat3Provider
+
 from components.args import Args
 from components.config import Config
 from components.instances_set import InstancesSets
@@ -6,9 +10,22 @@ from components.auto_coupled import  AutoCoupled
 from components.workflow import Workflow
 from components import tools
 
+# Initialize QGIS Application
+QgsApplication.setPrefixPath("D:/Programs/OSGeo4W64/apps/qgis", True)
+
+qgs = QgsApplication([], False)
+
+QgsApplication.initQgis()
+QgsApplication.processingRegistry().addProvider(QgsNativeAlgorithms())
+
+p = Qneat3Provider.Qneat3Provider()
+p.loadAlgorithms()
+
+QgsApplication.processingRegistry().addProvider(p)
+
 args = Args()
 json = tools.get_json(args.workflow)
-config = Config(json, args.output)
+config = Config(json, args.input, args.output)
 
 print('\nCleaning any previous output...')
 tools.empty_folder(config.output_folder)
@@ -35,3 +52,5 @@ auto_top = AutoCoupled("area_1", "gis_emergencies", auto_instances, auto_relatio
 
 print('Saving component based modeling (CBM) auto coupled model configuration to ' + config.output_path('auto_coupled.json'))
 auto_top.dump_cbm(config.output_path('auto_coupled.json'))
+
+qgs.exitQgis()
