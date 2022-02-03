@@ -1,1 +1,1 @@
-run workflow_auto.json ./input ./output
+run ./workflows/workflow_test.json ./input ./output
