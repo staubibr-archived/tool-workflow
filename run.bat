@@ -1,5 +1,3 @@
-@ECHO OFF 
-
 set workflow=%1
 set input=%2
 set output=%3
