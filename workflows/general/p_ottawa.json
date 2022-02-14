@@ -1,0 +1,4 @@
+{
+	"area filter": "\"csduid\" IN (3506008)",
+	"hospital filter": "index IN ('5657', '3968', '4860', '5660', '5658')"
+}

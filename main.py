@@ -24,8 +24,10 @@ p.loadAlgorithms()
 QgsApplication.processingRegistry().addProvider(p)
 
 args = Args()
-json = tools.get_json(args.workflow)
-config = Config(json, args.input, args.output)
+j_config = tools.get_json(args.workflow)
+j_params = None if args.params is None else tools.get_json(args.params)
+
+config = Config(j_config, args.input, args.output, j_params)
 
 print('\nCleaning any previous output...')
 tools.empty_folder(config.output_folder)

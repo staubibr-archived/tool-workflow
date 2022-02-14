@@ -1,1 +1,1 @@
-run ./workflows/workflow_test.json ./input ./output
+run ./workflows/wf_gatineau.json ./input ./output

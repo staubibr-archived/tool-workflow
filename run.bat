@@ -1,6 +1,7 @@
 set workflow=%1
 set input=%2
 set output=%3
+set params=%4
 
 set OSGEO4W_ROOT=D:\Programs\OSGeo4W64
 
@@ -25,6 +26,10 @@ set PYTHONPATH=%OSGEO4W_ROOT%\apps\qgis\python\plugins;%PYTHONPATH%
 set QT_QPA_PLATFORM_PLUGIN_PATH=%OSGEO4W_ROOT%\apps\Qt5\plugins\platforms
 set QGIS_PREFIX_PATH=%OSGEO4W_ROOT%\apps\qgis
 
-python D:\Development\devs-web-env\tool-workflow\main.py --workflow %workflow% --input %input% --output %output%
+if "%~4" == "" (
+    python D:\Development\devs-web-env\tool-workflow\main.py --workflow %workflow% --input %input% --output %output%
+) else (
+    python D:\Development\devs-web-env\tool-workflow\main.py --workflow %workflow% --input %input% --output %output% --params %params%
+)
 
 exit 0

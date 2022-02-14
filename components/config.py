@@ -11,6 +11,7 @@ class Layer:
     def __init__(self, _json):
         self._json = _json
 
+
 class InstanceSet:
     @property
     def layer(self):
@@ -31,6 +32,7 @@ class InstanceSet:
     def __init__(self, _json):
         self._json = _json
 
+
 class RelationSet:
     @property
     def layer(self):
@@ -46,6 +48,7 @@ class RelationSet:
 
     def __init__(self, _json):
         self._json = _json
+
 
 class Output:
     @property
@@ -72,6 +75,7 @@ class Output:
             raise Exception('Layer {name} is undefined in config data.'.format(name=name))
 
         return self.layers[name]
+
 
 class Input:
     @property
@@ -107,6 +111,7 @@ class Input:
 
         return self.parameters[name]
 
+
 class Task:
     @property
     def name(self):
@@ -130,6 +135,7 @@ class Task:
 
         self._json = _json
 
+
 class Config:
     @property
     def output(self):
@@ -151,7 +157,9 @@ class Config:
     def input_folder(self):
         return self._input_folder
 
-    def __init__(self, json, input_folder, output_folder):
+    def __init__(self, json, input_folder, output_folder, params):
+        json["input"]["parameters"] = params
+
         self._input_folder = input_folder
         self._output_folder = output_folder
         self._json = json
