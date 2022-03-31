@@ -1,0 +1,343 @@
+{
+    "input": {
+        "layers": {
+            "DA": "DA.gpkg",
+            "CSD": "CSD.gpkg",
+            "ODHF": "ODHF.gpkg",
+            "NRN_QC": "NRN_QC_9_0_GPKG_en.gpkg|layername=NRN_QC_9_0_ROADSEG",
+            "NRN_ON": "NRN_ON_13_0_GPKG_en.gpkg|layername=NRN_ON_12_1_ROADSEG"
+        },
+        "tables": {
+            "DA_pop": "DA.csv"
+        }
+    },
+    "output": {
+        "layers": [{
+                "name": "simulation_area",
+                "file": "simulation_area.geojson"
+            }, {
+                "name": "hospitals",
+                "file": "hospitals.geojson"
+            }, {
+                "name": "network",
+                "file": "network.geojson"
+            }, {
+                "name": "emergency_areas",
+                "file": "emergency_areas.geojson"
+            }
+        ],
+        "instances": [{
+                "layer": "emergency_areas",
+                "model": "emergency_area",
+                "id_field": "id",
+                "properties": ["id", "population"]
+            }, {
+                "layer": "hospitals",
+                "model": "hospital",
+                "id_field": "id",
+                "properties": ["id", "name", "rate", "capacity"]
+            }
+        ],
+        "relations": [{
+                "layer": "emergency_areas",
+                "coupling": ["emergency_area", "out_1", "hospital", "processor_in"],
+                "fields": ["id", "hospitals_1"]
+            }, {
+                "layer": "emergency_areas",
+                "coupling": ["emergency_area", "out_2", "hospital", "processor_in"],
+                "fields": ["id", "hospitals_2"]
+            }, {
+                "layer": "emergency_areas",
+                "coupling": ["emergency_area", "out_3", "hospital", "processor_in"],
+                "fields": ["id", "hospitals_3"]
+            }, {
+                "layer": "emergency_areas",
+                "coupling": ["hospital", "processor_out", "emergency_area", "rejected_1"],
+                "fields": ["hospitals_1", "id"]
+            }, {
+                "layer": "emergency_areas",
+                "coupling": ["hospital", "processor_out", "emergency_area", "rejected_1"],
+                "fields": ["hospitals_2", "id"]
+            }, {
+                "layer": "emergency_areas",
+                "coupling": ["hospital", "processor_out", "emergency_area", "rejected_1"],
+                "fields": ["hospitals_3", "id"]
+            }
+        ]
+    },
+    "tasks": [{
+            "name": "native:extractbyexpression",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "CSD"
+                },
+                "EXPRESSION": {
+					"type": "parameters",
+					"name": "area"
+				}
+            }
+        }, {
+            "name": "native:dissolve",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                }
+            }
+        }, {
+            "name": "native:deletecolumn",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "COLUMN": ["fid", "id", "csduid", "csdname", "csdtype", "pruid", "prname", "cduid", "cdname", "cdtype", "ccsuid", "ccsname", "eruid", "ername", "saccode", "sactype", "cmauid", "cmapuid", "cmaname", "cmatype"]
+            },
+            "output": "simulation_area"
+        }, {
+            "name": "native:clip",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "DA"
+                },
+                "OVERLAY": {
+                    "type": "layers",
+                    "name": "simulation_area"
+                }
+            }
+        }, {
+            "name": "native:deletecolumn",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "COLUMN": ["fid", "id", "pruid", "prname", "cduid", "cdname", "cdtype", "ccsuid", "ccsname", "csduid", "csdname", "csdtype", "eruid", "ername", "saccode", "sactype", "cmauid", "cmapuid", "cmaname", "cmatype", "ctuid", "ctname", "adauid"]
+            }
+        }, {
+            "name": "native:reprojectlayer",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "TARGET_CRS": "4326"
+            }
+        }, {
+            "name": "native:joinattributestable",
+            "params": {
+                "DISCARD_NONMATCHING": false,
+                "FIELD": "dauid",
+                "FIELDS_TO_COPY": ["DApop_2016"],
+                "FIELD_2": "DAuid",
+                "INPUT": {
+                    "type": "result"
+                },
+                "INPUT_2": {
+                    "type": "data",
+                    "name": "DA_pop"
+                },
+                "METHOD": 1,
+                "PREFIX": ""
+            }
+        }, {
+            "name": "native:refactorfields",
+            "params": {
+                "FIELDS_MAPPING": [{
+                        "expression": "\"dauid\"",
+                        "length": 0,
+                        "name": "id",
+                        "precision": 0,
+                        "type": 10
+                    }, {
+                        "expression": "\"DApop_2016\"",
+                        "length": 0,
+                        "name": "population",
+                        "precision": 0,
+                        "type": 2
+                    }
+                ],
+                "INPUT": {
+                    "type": "result"
+                }
+            },
+            "output": "emergency_areas"
+        }, {
+            "name": "native:extractbyexpression",
+            "params": {
+                "EXPRESSION": "\"odhf_facility_type\" = 'Hospitals'",
+                "INPUT": {
+                    "type": "layers",
+                    "name": "ODHF"
+                }
+            }
+        }, {
+            "name": "native:extractbylocation",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "INTERSECT": {
+                    "type": "layers",
+                    "name": "simulation_area"
+                },
+                "PREDICATE": [6]
+            }
+        }, {
+            "name": "custom:update",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "ID_FIELD": "index",
+                "UPDATES": {
+					"type": "parameters",
+					"name": "hospitals"
+				}
+            }
+        }, {
+            "name": "native:deletecolumn",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "COLUMN": ["source_facility_type", "odhf_facility_type", "provider", "unit", "street_no", "street_name", "postal_code", "city", "province", "source_format_str_address", "CSDname", "CSDuid", "Pruid", "latitude", "longitude"]
+            }
+        }, {
+            "name": "native:refactorfields",
+            "params": {
+                "FIELDS_MAPPING": [{
+                        "expression": "\"index\"",
+                        "length": 0,
+                        "name": "id",
+                        "precision": 0,
+                        "type": 10
+                    }, {
+                        "expression": "\"facility_name\"",
+                        "length": 0,
+                        "name": "name",
+                        "precision": 0,
+                        "type": 10
+                    }, {
+                        "expression": "\"capacity\"",
+                        "length": 0,
+                        "name": "capacity",
+                        "precision": 0,
+                        "type": 2
+                    }, {
+                        "expression": "\"rate\"",
+                        "length": 0,
+                        "name": "rate",
+                        "precision": 0,
+                        "type": 2
+                    }
+                ],
+                "INPUT": {
+                    "type": "result"
+                }
+            }
+        }, {
+            "name": "native:reprojectlayer",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "TARGET_CRS": "4326"
+            },
+            "output": "hospitals"
+        }, {
+            "name": "native:clip",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "NRN_QC"
+                },
+                "OVERLAY": {
+                    "type": "layers",
+                    "name": "simulation_area"
+                }
+            },
+            "output": "result_1"
+        }, {
+            "name": "native:clip",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "NRN_ON"
+                },
+                "OVERLAY": {
+                    "type": "layers",
+                    "name": "simulation_area"
+                }
+            },
+            "output": "result_2"
+        }, {
+            "name": "native:mergevectorlayers",
+            "params": {
+                "LAYERS": {
+                    "type": "layers",
+                    "names": ["result_1", "result_2"]
+                }
+            }
+        }, {
+            "name": "native:reprojectlayer",
+            "params": {
+                "INPUT": {
+                    "type": "result"
+                },
+                "TARGET_CRS": "4326"
+            },
+            "output": "network"
+        }, {
+            "name": "native:centroids",
+            "params": {
+                "ALL_PARTS": false,
+                "INPUT": {
+                    "type": "layers",
+                    "name": "emergency_areas"
+                }
+            }
+        }, {
+            "name": "qneat3:OdMatrixFromLayersAsTable",
+            "params": {
+                "DEFAULT_DIRECTION": 2,
+                "DEFAULT_SPEED": 55,
+                "DIRECTION_FIELD": "",
+                "ENTRY_COST_CALCULATION_METHOD": 0,
+                "FROM_ID_FIELD": "id",
+                "FROM_POINT_LAYER": {
+                    "type": "result"
+                },
+                "INPUT": {
+                    "type": "layers",
+                    "name": "network"
+                },
+                "SPEED_FIELD": "",
+                "STRATEGY": 0,
+                "TOLERANCE": 0,
+                "TO_ID_FIELD": "id",
+                "TO_POINT_LAYER": {
+                    "type": "layers",
+                    "name": "hospitals"
+                },
+                "VALUE_BACKWARD": "",
+                "VALUE_BOTH": "",
+                "VALUE_FORWARD": ""
+            },
+            "output": "od"
+        }, {
+            "name": "custom:closest",
+            "params": {
+                "INPUT": {
+                    "type": "layers",
+                    "name": "emergency_areas"
+                },
+                "OD": {
+                    "type": "layers",
+                    "name": "od"
+                },
+                "SOURCE_FIELD": "id",
+                "LINK_FIELD": "hospitals",
+                "N": 3
+            }
+        }
+    ]
+}

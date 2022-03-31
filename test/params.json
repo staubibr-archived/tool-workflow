@@ -1,0 +1,21 @@
+{
+    "area": "\"csduid\" IN (3506008)",
+    "hospitals": {
+        "3143": {
+            "capacity": "100",
+            "rate": "10"
+        },
+        "4860": {
+            "capacity": "200",
+            "rate": "20"
+        },
+        "5657": {
+            "capacity": "70",
+            "rate": "5"
+        },
+        "5659": {
+            "capacity": "50",
+            "rate": "5"
+        }
+    }
+}

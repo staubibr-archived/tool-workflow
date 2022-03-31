@@ -2,13 +2,14 @@ from qgis.core import QgsCoordinateReferenceSystem, QgsVectorLayer
 import processing
 
 # Prepare QGIS environment
-from tasks import tsk_closest
+from tasks import tsk_closest, tsk_update
 
 class Workflow:
     N = 0
 
     CUSTOM= {
-        "custom:closest": tsk_closest
+        "custom:closest": tsk_closest,
+        "custom:update": tsk_update
     }
 
     def __init__(self, config):
